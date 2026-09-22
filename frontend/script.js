@@ -15,35 +15,46 @@ function previewImage() {
 }
 
 // Analyze button
-function analyzeDocument() {
+
+async function analyzeDocument() {
   const input = document.getElementById("passportInput");
   const file = input.files[0];
 
-  // Agar file upload nahi hui
   if (!file) {
     document.getElementById("errorMessage").classList.remove("hidden");
     return;
   }
 
-  // Error hide
   document.getElementById("errorMessage").classList.add("hidden");
-
-  // Loading show
   document.getElementById("loading").classList.remove("hidden");
 
-  // Dummy analysis (backend baad me connect karenge)
-  setTimeout(() => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
     document.getElementById("loading").classList.add("hidden");
     document.getElementById("resultCard").classList.remove("hidden");
 
-    document.getElementById("ocrResult").textContent = "Extracted";
-    document.getElementById("mrzResult").textContent = "Valid";
-    document.getElementById("tamperResult").textContent = "Low";
-    document.getElementById("faceResult").textContent = "Matched";
-    document.getElementById("graphResult").textContent = "1 Related Case";
+    document.getElementById("ocrResult").textContent = "Uploaded";
+    document.getElementById("mrzResult").textContent = "Pending";
+    document.getElementById("tamperResult").textContent = "Pending";
+    document.getElementById("faceResult").textContent = "Pending";
+    document.getElementById("graphResult").textContent = "Pending";
 
     const riskBadge = document.getElementById("riskBadge");
-    riskBadge.textContent = "MEDIUM";
+    riskBadge.textContent = "UPLOADED";
     riskBadge.className = "risk medium";
-  }, 1500);
+
+    console.log(data);
+  } catch (error) {
+    document.getElementById("loading").classList.add("hidden");
+    alert("Backend connection failed.");
+  }
 }
