@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VERITRACE AI</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>VERITRACE AI</h1>
+      <p class="subtitle">AI-Based Fake Identity & Document Screening</p>
+
+      <div class="upload-box">
+        <input
+          type="file"
+          id="passportInput"
+          accept="image/*"
+          onchange="previewImage()"
+          hidden
+        />
+
+        <button onclick="document.getElementById('passportInput').click()">
+          Upload Passport
+        </button>
+      </div>
+
+      <img id="preview" alt="Passport Preview" />
+
+      <button id="analyzeBtn" onclick="analyzeDocument()">
+        Analyze Document
+      </button>
+
+      <p id="errorMessage" class="error hidden">
+        Please upload a passport image first.
+      </p>
+
+      <div id="loading" class="hidden">Analyzing...</div>
+
+      <div id="resultCard" class="hidden">
+        <h2>Screening Result</h2>
+
+        <div class="row">
+          <span>OCR</span>
+          <span id="ocrResult">Pending</span>
+        </div>
+
+        <div class="row">
+          <span>MRZ</span>
+          <span id="mrzResult">Pending</span>
+        </div>
+
+        <div class="row">
+          <span>Tampering</span>
+          <span id="tamperResult">Pending</span>
+        </div>
+
+        <div class="row">
+          <span>Face Match</span>
+          <span id="faceResult">Pending</span>
+        </div>
+
+        <div class="row">
+          <span>Shadow Graph</span>
+          <span id="graphResult">Pending</span>
+        </div>
+
+        <div class="risk-box">
+          <h3>Risk Score</h3>
+          <div id="riskBadge" class="risk medium">MEDIUM</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
