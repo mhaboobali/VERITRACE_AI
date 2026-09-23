@@ -62,9 +62,23 @@ async function analyzeDocument() {
 `;
 
     // Temporary statuses
-    document.getElementById("mrzResult").textContent = "Detected";
-    document.getElementById("tamperResult").textContent = "Pending";
-    document.getElementById("faceResult").textContent = "Pending";
+    const mrzResult = document.getElementById("mrzResult");
+
+    if (data.mrz !== "Not Found") {
+      mrzResult.innerHTML = "✅ Verified<br>";
+      const code = document.createElement("code");
+      code.textContent = data.mrz; // textContent < ko text hi rakhega
+      mrzResult.appendChild(code);
+    } else {
+      mrzResult.textContent = "❌ Not Found";
+    }
+    document.getElementById("tamperResult").innerHTML =
+      data.tampering === "No Tampering Detected"
+        ? "✅ No Tampering Detected"
+        : "⚠️ Possible Tampering";
+    document.getElementById("faceResult").innerHTML = data.face_detected
+      ? "✅ Face Detected"
+      : "❌ No Face Detected";
     document.getElementById("graphResult").textContent = "Pending";
 
     // Risk Badge
