@@ -52,37 +52,53 @@ async function analyzeDocument() {
 
     // OCR Result
     document.getElementById("ocrResult").innerHTML = `
-<div><strong>Passport:</strong> ${data.passport}</div>
-<div><strong>Name:</strong> ${data.name}</div>
-<div><strong>Given Name:</strong> ${data.given_name}</div>
-<div><strong>Passport No:</strong> ${data.passport_no}</div>
-<div><strong>DOB:</strong> ${data.dob}</div>
-<div><strong>Place:</strong> ${data.place}</div>
-<div><strong>Authority:</strong> ${data.authority}</div>
-`;
+      <div><strong>Passport:</strong> ${data.passport}</div>
+      <div><strong>Name:</strong> ${data.name}</div>
+      <div><strong>Given Name:</strong> ${data.given_name}</div>
+      <div><strong>Passport No:</strong> ${data.passport_no}</div>
+      <div><strong>DOB:</strong> ${data.dob}</div>
+      <div><strong>Place:</strong> ${data.place}</div>
+      <div><strong>Authority:</strong> ${data.authority}</div>
+    `;
 
-    // Temporary statuses
+    // MRZ Result
     const mrzResult = document.getElementById("mrzResult");
 
     if (data.mrz !== "Not Found") {
       mrzResult.innerHTML = "✅ Verified<br>";
       const code = document.createElement("code");
-      code.textContent = data.mrz; // textContent < ko text hi rakhega
+      code.textContent = data.mrz;
       mrzResult.appendChild(code);
     } else {
       mrzResult.textContent = "❌ Not Found";
     }
+
+    // Tampering Result
     document.getElementById("tamperResult").innerHTML =
       data.tampering === "No Tampering Detected"
         ? "✅ No Tampering Detected"
         : "⚠️ Possible Tampering";
+
+    // Face Result
     document.getElementById("faceResult").innerHTML = data.face_detected
       ? "✅ Face Detected"
       : "❌ No Face Detected";
-    document.getElementById("graphResult").textContent = "Pending";
+
+    // Shadow Graph
+    const shadowImage = document.getElementById("shadowImage");
+
+    if (data.shadow_graph) {
+      shadowImage.src = "data:image/png;base64," + data.shadow_graph;
+      shadowImage.style.display = "block";
+      document.getElementById("graphResult").innerHTML = "✅ Generated";
+    } else {
+      shadowImage.style.display = "none";
+      document.getElementById("graphResult").textContent = "Unavailable";
+    }
 
     // Risk Badge
     const riskBadge = document.getElementById("riskBadge");
+
     riskBadge.textContent = "LOW";
     riskBadge.className = "risk low";
 

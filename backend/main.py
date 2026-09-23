@@ -1,6 +1,10 @@
 from fastapi import FastAPI, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+
 import easyocr
+import cv2
+import numpy as np
+import base64
 import os
 import shutil
 import re
@@ -22,9 +26,11 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 reader = easyocr.Reader(["en"])
-import cv2
-import numpy as np
 
+
+# ----------------------------
+# Tampering Detection
+# ----------------------------
 def detect_tampering(image_path):
     img = cv2.imread(image_path)
 
@@ -37,8 +43,26 @@ def detect_tampering(image_path):
         return "Possible Tampering"
     else:
         return "No Tampering Detected"
+
+
+# ----------------------------
+# Face Detection (Temporary)
+# ----------------------------
 def detect_face(image_path):
     return True
+
+
+# ----------------------------
+# Shadow Graph
+# ----------------------------
+def create_shadow_graph(image_path):
+    img = cv2.imread(image_path)
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 80, 180)
+
+    _, buffer = cv2.imencode(".png", edges)
+    return base64.b64encode(buffer).decode("utf-8")
 
 
 @app.get("/")
@@ -58,30 +82,30 @@ async def upload_passport(file: UploadFile):
     # OCR
     text_list = reader.readtext(file_path, detail=0)
     full_text = " ".join(text_list)
+
     tampering_status = detect_tampering(file_path)
+    shadow_graph = create_shadow_graph(file_path)
     face_detected = detect_face(file_path)
 
-   # ----------------------------
-    # MRZ Detection (Fixed)
+    # ----------------------------
+    # MRZ Detection
     # ----------------------------
     mrz_line = "Not Found"
 
     for i, line in enumerate(text_list):
         cleaned = line.replace(" ", "")
 
-        # Case 1: Full MRZ already detected
         if cleaned.startswith("P<"):
             mrz_line = cleaned
             break
 
-        # Case 2: OCR split "P" and next line
         if cleaned == "P" and i + 1 < len(text_list):
             next_line = text_list[i + 1].replace(" ", "")
             mrz_line = "P<" + next_line.lstrip("<")
             break
 
     # ----------------------------
-    # Helper function
+    # Helper Function
     # ----------------------------
     def find_after(keyword):
         keyword = keyword.lower()
@@ -115,6 +139,16 @@ async def upload_passport(file: UploadFile):
         dob = match.group()
 
     # ----------------------------
+    # Risk Score
+    # ----------------------------
+    risk = "LOW"
+
+    if mrz_line == "Not Found":
+        risk = "HIGH"
+    elif tampering_status == "Possible Tampering":
+        risk = "MEDIUM"
+
+    # ----------------------------
     # Final Response
     # ----------------------------
     return {
@@ -128,5 +162,6 @@ async def upload_passport(file: UploadFile):
         "mrz": mrz_line,
         "tampering": tampering_status,
         "face_detected": face_detected,
-        "risk": "LOW"
+        "shadow_graph": shadow_graph,
+        "risk": risk
     }
