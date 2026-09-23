@@ -1,32 +1,37 @@
-// Passport upload hone ke baad preview dikhana
-function previewImage() {
-  const input = document.getElementById("passportInput");
-  const file = input.files[0];
+// =============================
+// VERITRACE AI - Frontend Script
+// =============================
 
-  if (file) {
-    const preview = document.getElementById("preview");
+// Elements
+const fileInput = document.getElementById("passportInput");
+const previewImage = document.getElementById("previewImage");
+const errorMessage = document.getElementById("errorMessage");
+const loading = document.getElementById("loading");
+const resultCard = document.getElementById("resultCard");
 
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = "block";
+// Image Preview
+fileInput.addEventListener("change", function () {
+  const file = this.files[0];
 
-    // Error message hide
-    document.getElementById("errorMessage").classList.add("hidden");
-  }
-}
+  if (!file) return;
 
-// Analyze button
+  previewImage.src = URL.createObjectURL(file);
+  previewImage.style.display = "block";
+  errorMessage.classList.add("hidden");
+});
 
+// Analyze Passport
 async function analyzeDocument() {
-  const input = document.getElementById("passportInput");
-  const file = input.files[0];
+  const file = fileInput.files[0];
 
   if (!file) {
-    document.getElementById("errorMessage").classList.remove("hidden");
+    errorMessage.classList.remove("hidden");
     return;
   }
 
-  document.getElementById("errorMessage").classList.add("hidden");
-  document.getElementById("loading").classList.remove("hidden");
+  errorMessage.classList.add("hidden");
+  resultCard.classList.add("hidden");
+  loading.classList.remove("hidden");
 
   const formData = new FormData();
   formData.append("file", file);
@@ -39,22 +44,38 @@ async function analyzeDocument() {
 
     const data = await response.json();
 
-    document.getElementById("loading").classList.add("hidden");
-    document.getElementById("resultCard").classList.remove("hidden");
+    // Hide loading
+    loading.classList.add("hidden");
 
-    document.getElementById("ocrResult").textContent = "Uploaded";
-    document.getElementById("mrzResult").textContent = "Pending";
+    // Show result card
+    resultCard.classList.remove("hidden");
+
+    // OCR Result
+    document.getElementById("ocrResult").innerHTML = `
+<div><strong>Passport:</strong> ${data.passport}</div>
+<div><strong>Name:</strong> ${data.name}</div>
+<div><strong>Given Name:</strong> ${data.given_name}</div>
+<div><strong>Passport No:</strong> ${data.passport_no}</div>
+<div><strong>DOB:</strong> ${data.dob}</div>
+<div><strong>Place:</strong> ${data.place}</div>
+<div><strong>Authority:</strong> ${data.authority}</div>
+`;
+
+    // Temporary statuses
+    document.getElementById("mrzResult").textContent = "Detected";
     document.getElementById("tamperResult").textContent = "Pending";
     document.getElementById("faceResult").textContent = "Pending";
     document.getElementById("graphResult").textContent = "Pending";
 
+    // Risk Badge
     const riskBadge = document.getElementById("riskBadge");
-    riskBadge.textContent = "UPLOADED";
-    riskBadge.className = "risk medium";
+    riskBadge.textContent = "LOW";
+    riskBadge.className = "risk low";
 
     console.log(data);
   } catch (error) {
-    document.getElementById("loading").classList.add("hidden");
+    loading.classList.add("hidden");
     alert("Backend connection failed.");
+    console.error(error);
   }
 }
